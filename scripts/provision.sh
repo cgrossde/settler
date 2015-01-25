@@ -28,7 +28,7 @@ apt-get update
 # Install Some Basic Packages
 
 apt-get install -y build-essential curl dos2unix gcc git libmcrypt4 libpcre3-dev \
-make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim
+make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh
 
 # Install A Few Helpful Python Packages
 
@@ -67,6 +67,15 @@ mv composer.phar /usr/local/bin/composer
 # Add Composer Global Bin To Path
 
 printf "\nPATH=\"/home/vagrant/.composer/vendor/bin:\$PATH\"\n" | tee -a /home/vagrant/.profile
+
+# Install grml zsh config
+wget -O /home/vagrant/.zshrc http://git.grml.org/f/grml-etc-core/etc/zsh/zshrc
+
+# Alias for behat
+printf "\nalias behat=\"vendor/behat/behat/bin/behat\"\n" | tee -a /home/vagrant/.zshrc.local
+
+# Set shell for vagrant to zsh
+sudo chsh -s /bin/zsh vagrant
 
 # Install Laravel Envoy
 
@@ -119,6 +128,8 @@ sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php5/fpm/php.ini
 echo "xdebug.remote_enable = 1" >> /etc/php5/fpm/conf.d/20-xdebug.ini
 echo "xdebug.remote_connect_back = 1" >> /etc/php5/fpm/conf.d/20-xdebug.ini
 echo "xdebug.remote_port = 9000" >> /etc/php5/fpm/conf.d/20-xdebug.ini
+# Behat might not work with only 100
+echo "xdebug.max_nesting_level = 200" >> /etc/php5/cli/conf.d/20-xdebug.ini
 
 # Copy fastcgi_params to Nginx because they broke it on the PPA
 
@@ -168,11 +179,9 @@ groups vagrant
 # Install Node
 
 apt-get install -y nodejs
-sudo su vagrant <<'EOF'
-/usr/bin/npm install -g grunt-cli
-/usr/bin/npm install -g gulp
-/usr/bin/npm install -g bower
-EOF
+npm install -g grunt-cli
+npm install -g gulp
+npm install -g bower
 
 # Install SQLite
 
@@ -222,11 +231,6 @@ apt-get install -y redis-server memcached beanstalkd
 sudo sed -i "s/#START=yes/START=yes/" /etc/default/beanstalkd
 sudo /etc/init.d/beanstalkd start
 
-# Write Bash Aliases
-
-cp /vagrant/aliases /home/vagrant/.bash_aliases
-
-
 
 # Install Mailcatcher
 
@@ -258,4 +262,28 @@ exec nohup /usr/local/bin/mailcatcher -f --ip 0.0.0.0  >> /var/log/mailcatcher/m
 " > /etc/init/mailcatcher.conf
 
 # Start Mailcatcher
-start mailcatcher
+#start mailcatcher
+
+
+#
+# Reduce size
+#
+echo "Reducing size ..."
+# Unmount project
+umount /vagrant
+
+# Remove APT cache
+apt-get clean -y
+apt-get autoclean -y
+
+# Linux headers
+rm -rf /usr/src/linux-headers*
+
+# Package lists
+rm -f /var/lib/apt/lists/archive.*
+
+# Zero free space to aid VM compression
+dd if=/dev/zero of=/EMPTY bs=1M
+rm -f /EMPTY
+
+
