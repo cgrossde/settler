@@ -28,7 +28,7 @@ apt-get update
 # Install Some Basic Packages
 
 apt-get install -y build-essential curl dos2unix gcc git libmcrypt4 libpcre3-dev \
-make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh
+make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh unzip
 
 # Install A Few Helpful Python Packages
 
@@ -231,6 +231,69 @@ apt-get install -y redis-server memcached beanstalkd
 sudo sed -i "s/#START=yes/START=yes/" /etc/default/beanstalkd
 sudo /etc/init.d/beanstalkd start
 
+
+# Install PhpMyAdmin
+#
+# https://sourceforge.net/projects/phpmyadmin/files/latest/download
+cd /var/www/
+wget https://sourceforge.net/projects/phpmyadmin/files/latest/download
+unzip download
+mv phpMyAdmin-* phpmyadmin
+rm download
+# Config phpMyAdmin
+echo "<?php
+\$cfg['blowfish_secret'] = ''; /* YOU MUST FILL IN THIS FOR COOKIE AUTH! */
+\$cfg['Servers'][1]['auth_type'] = 'config';
+\$cfg['Servers'][1]['host'] = 'localhost';
+\$cfg['Servers'][1]['connect_type'] = 'tcp';
+\$cfg['Servers'][1]['compress'] = false;
+\$cfg['Servers'][1]['AllowNoPassword'] = true;
+\$cfg['Servers'][1]['user'] = 'root';
+\$cfg['Servers'][1]['password'] = 'secret';
+\$cfg['UploadDir'] = '';
+\$cfg['SaveDir'] = '';
+?>" > /var/www/phpmyadmin/config.inc.php
+
+# Config ngix
+echo "server {
+    listen 1085;
+    server_name phpmyadmin.local;
+    root \"/var/www/phpmyadmin\";
+
+    index index.html index.htm index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    access_log off;
+    error_log  /var/log/nginx/phpmyadmin-error.log error;
+
+    sendfile off;
+
+    client_max_body_size 100m;
+
+    location ~ \.php\$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_intercept_errors off;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 4 16k;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}" > /etc/nginx/sites-available/phpmyadmin
+ln -s /etc/nginx/sites-available/phpmyadmin /etc/nginx/sites-enabled/phpmyadmin
 
 # Install Mailcatcher
 

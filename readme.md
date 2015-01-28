@@ -4,6 +4,7 @@
 
 * Fix npm install
 * [Mailcatcher](http://mailcatcher.me) to catch and view mails sent by server
+* PhpMyAdmin on port 1085 / 10850
 * ZSH shell with [grml-zsh-config](http://grml.org/zsh/)
 * Increased `xdebug.max_nesting_level` to 200 for *behat* to work
 * Reduced size ~520MB
@@ -26,4 +27,4 @@ To use this box you need my fork of [homestead](https://github.com/cgrossde/home
 composer global require "cgross/homesteadfork=~2.1"
 ```
 
-**After that you will have the `hsfork` command**. The rest of the install is equivalent with the [Laravel documentation](http://laravel.com/docs/4.2/homestead) about homestead. Just replace every `homestead` command with the `hsfork` command. I renamed it to `hsfork` so you can run them in parallel.
+**After that you will have the `hsfork` command**. The rest of the install is equivalent with the [Laravel documentation](http://laravel.com/docs/4.2/homestead) about homestead. Just replace every `homestead` command with the `hsfork` command. I renamed it to `hsfork` so you can install homestead and my fork in parallel but you won't be able to run both machines at the same time since they use the same ports.

@@ -19,6 +19,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.network "forwarded_port", guest: 5432, host: 54320
 	config.vm.network "forwarded_port", guest: 35729, host: 35729
 	config.vm.network "forwarded_port", guest: 1080, host: 10800
+	config.vm.network "forwarded_port", guest: 1085, host: 10850
 
 	# Run The Base Provisioning Script
 	config.vm.provision "shell" do |s|
