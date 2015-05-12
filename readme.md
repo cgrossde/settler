@@ -3,6 +3,7 @@
 ## Changes
 
 * Fix npm install
+* Node updated to 0.12.2
 * [Mailcatcher](http://mailcatcher.me) to catch and view mails sent by server
 * PhpMyAdmin on port 1085 / 10850
 * ZSH shell with [grml-zsh-config](http://grml.org/zsh/)
