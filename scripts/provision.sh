@@ -12,7 +12,6 @@ apt-get install -y software-properties-common
 
 apt-add-repository ppa:nginx/stable -y
 apt-add-repository ppa:rwky/redis -y
-apt-add-repository ppa:chris-lea/node.js -y
 apt-add-repository ppa:ondrej/php5-5.6 -y
 
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -29,12 +28,6 @@ apt-get update
 
 apt-get install -y build-essential curl dos2unix gcc git libmcrypt4 libpcre3-dev \
 make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh unzip
-
-# Install A Few Helpful Python Packages
-
-pip install httpie
-pip install fabric
-pip install python-simple-hipchat
 
 # Set My Timezone
 
@@ -177,11 +170,12 @@ id vagrant
 groups vagrant
 
 # Install Node
-
+curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
 apt-get install -y nodejs
-npm install -g grunt-cli
+
 npm install -g gulp
 npm install -g bower
+npm install -g grunt-cli
 
 # Install SQLite
 
