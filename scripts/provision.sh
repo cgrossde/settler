@@ -64,8 +64,11 @@ printf "\nPATH=\"/home/vagrant/.composer/vendor/bin:\$PATH\"\n" | tee -a /home/v
 # Install grml zsh config
 wget -O /home/vagrant/.zshrc http://git.grml.org/f/grml-etc-core/etc/zsh/zshrc
 
-# Alias for behat
+# Alias for behat and artisan
 printf "\nalias behat=\"vendor/behat/behat/bin/behat\"\n" | tee -a /home/vagrant/.zshrc.local
+printf "\nalias artisan=\"php artisan\"\n" | tee -a /home/vagrant/.zshrc.local
+
+chown vagrant /home/vagrant/.zshrc.local
 
 # Set shell for vagrant to zsh
 sudo chsh -s /bin/zsh vagrant
@@ -318,9 +321,10 @@ setgid mailcatcher
 exec nohup /usr/local/bin/mailcatcher -f --ip 0.0.0.0  >> /var/log/mailcatcher/mailcatcher.log 2>&1
 " > /etc/init/mailcatcher.conf
 
-# Start Mailcatcher
-#start mailcatcher
-
+# Add swap for composer
+/bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+/sbin/mkswap /var/swap.1
+/sbin/swapon /var/swap.1
 
 #
 # Reduce size
