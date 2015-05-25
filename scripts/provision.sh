@@ -325,6 +325,9 @@ exec nohup /usr/local/bin/mailcatcher -f --ip 0.0.0.0  >> /var/log/mailcatcher/m
 /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
 /sbin/mkswap /var/swap.1
 /sbin/swapon /var/swap.1
+# Mount swap on boot
+echo "/var/swap.1 	swap 	swap 	defaults 	0 0" >> /etc/fstab
+
 
 #
 # Reduce size
