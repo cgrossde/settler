@@ -11,14 +11,8 @@ apt-get upgrade -y
 apt-get install -y software-properties-common
 
 apt-add-repository ppa:nginx/stable -y
-apt-add-repository ppa:rwky/redis -y
 apt-add-repository ppa:ondrej/php5-5.6 -y
 
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" >> /etc/apt/sources.list.d/postgresql.list'
-
-curl -s https://packagecloud.io/gpg.key | sudo apt-key add -
-echo "deb http://packages.blackfire.io/debian any main" | sudo tee /etc/apt/sources.list.d/blackfire.list
 
 # Update Package Lists
 
@@ -27,19 +21,19 @@ apt-get update
 # Install Some Basic Packages
 
 apt-get install -y build-essential curl dos2unix gcc git libmcrypt4 libpcre3-dev \
-make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh unzip
+make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh unzip snmp
 
 # Set My Timezone
 
-ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
 # Install PHP Stuffs
-
+# 
 apt-get install -y php5-cli php5-dev php-pear \
 php5-mysqlnd php5-pgsql php5-sqlite \
 php5-apcu php5-json php5-curl php5-gd \
 php5-gmp php5-imap php5-mcrypt php5-xdebug \
-php5-memcached php5-redis
+php5-memcached php5-snmp
 
 # Make MCrypt Available
 
@@ -94,22 +88,6 @@ rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
 service nginx restart
 
-# Add The HHVM Key & Repository
-
-wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | apt-key add -
-echo deb http://dl.hhvm.com/ubuntu trusty main | tee /etc/apt/sources.list.d/hhvm.list
-apt-get update
-apt-get install -y hhvm
-
-# Configure HHVM To Run As Homestead
-
-service hhvm stop
-sed -i 's/#RUN_AS_USER="www-data"/RUN_AS_USER="vagrant"/' /etc/default/hhvm
-service hhvm start
-
-# Start HHVM On System Start
-
-update-rc.d hhvm defaults
 
 # Setup Some PHP-FPM Options
 
@@ -173,8 +151,8 @@ id vagrant
 groups vagrant
 
 # Install Node
-curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
-apt-get install -y nodejs
+curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
 npm install -g gulp
 npm install -g bower
@@ -203,40 +181,18 @@ mysql --user="root" --password="secret" -e "FLUSH PRIVILEGES;"
 mysql --user="root" --password="secret" -e "CREATE DATABASE homestead;"
 service mysql restart
 
-# Install Postgres
-
-apt-get install -y postgresql-9.4 postgresql-contrib-9.4
-
-# Configure Postgres Remote Access
-
-sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/9.4/main/postgresql.conf
-echo "host    all             all             10.0.2.2/32               md5" | tee -a /etc/postgresql/9.4/main/pg_hba.conf
-sudo -u postgres psql -c "CREATE ROLE homestead LOGIN UNENCRYPTED PASSWORD 'secret' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;"
-sudo -u postgres /usr/bin/createdb --echo --owner=homestead homestead
-service postgresql restart
-
-# Install Blackfire
-
-apt-get install -y blackfire-agent blackfire-php
-
 # Install A Few Other Things
-
-apt-get install -y redis-server memcached beanstalkd
-
-# Configure Beanstalkd
-
-sudo sed -i "s/#START=yes/START=yes/" /etc/default/beanstalkd
-sudo /etc/init.d/beanstalkd start
+apt-get install -y memcached
 
 
 # Install PhpMyAdmin
 #
 # https://sourceforge.net/projects/phpmyadmin/files/latest/download
 cd /var/www/
-wget https://sourceforge.net/projects/phpmyadmin/files/latest/download
-unzip download
-mv phpMyAdmin-* phpmyadmin
-rm download
+wget https://files.phpmyadmin.net/phpMyAdmin/4.5.5.1/phpMyAdmin-4.5.5.1-all-languages.zip
+unzip phpMyAdmin-4.5.5.1-all-languages.zip
+mv phpMyAdmin-4.5.5.1-all-languages phpmyadmin
+rm phpMyAdmin-4.5.5.1-all-languages.zip
 # Config phpMyAdmin
 echo "<?php
 \$cfg['blowfish_secret'] = ''; /* YOU MUST FILL IN THIS FOR COOKIE AUTH! */

@@ -3,12 +3,15 @@
 ## Changes
 
 * Fix npm install
-* Node updated to 0.12.2
+* Node updated to 5.x
 * [Mailcatcher](http://mailcatcher.me) to catch and view mails sent by server
 * PhpMyAdmin on port 1085 / 10850
 * ZSH shell with [grml-zsh-config](http://grml.org/zsh/)
 * Increased `xdebug.max_nesting_level` to 200 for *behat* to work
 * Reduced size ~520MB
+* Remove unused packages (PostgreSQL, Blackfire, beanstalkd, redis)
+* Changed timezone to Berlin
+* Added `snmp` and `php5-snmp`
 
 **Aliases:**
 * `behat` for `vendor/behat/behat/bin/behat`
@@ -28,4 +31,4 @@ To use this box you need my fork of [homestead](https://github.com/cgrossde/home
 composer global require "cgross/homesteadfork"
 ```
 
-**After that you will have the `hsfork` command**. The rest of the install is equivalent with the [Laravel documentation](http://laravel.com/docs/4.2/homestead) about homestead. Just replace every `homestead` command with the `hsfork` command. I renamed it to `hsfork` so you can install homestead and my fork in parallel but you won't be able to run both machines at the same time since they use the same ports.
+**After that you will have the `hsfork` command**. The rest of the install is equivalent with the [Laravel documentation](http://laravel.com/docs/5.2/homestead) about homestead. Just replace every `homestead` command with the `hsfork` command. I renamed it to `hsfork` so you can install homestead and my fork in parallel but you won't be able to run both machines at the same time since they use the same ports.
