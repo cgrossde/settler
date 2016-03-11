@@ -11,7 +11,7 @@ apt-get upgrade -y
 apt-get install -y software-properties-common
 
 apt-add-repository ppa:nginx/stable -y
-apt-add-repository ppa:ondrej/php5-5.6 -y
+apt-add-repository ppa:ondrej/php -y
 
 
 # Update Package Lists
@@ -21,30 +21,20 @@ apt-get update
 # Install Some Basic Packages
 
 apt-get install -y build-essential curl dos2unix gcc git libmcrypt4 libpcre3-dev \
-make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh unzip snmp
+make python2.7-dev python-pip re2c supervisor unattended-upgrades whois vim zsh \
+unzip snmp libnotify-bin
 
 # Set My Timezone
 
 ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
 # Install PHP Stuffs
-# 
-apt-get install -y php5-cli php5-dev php-pear \
-php5-mysqlnd php5-pgsql php5-sqlite \
-php5-apcu php5-json php5-curl php5-gd \
-php5-gmp php5-imap php5-mcrypt php5-xdebug \
-php5-memcached php5-snmp
+apt-get install -y --force-yes php7.0-cli php7.0-dev \
+php-pgsql php-sqlite3 php-gd php-apcu \
+php-curl php7.0-mcrypt php7.0-snmp php7.0-json \
+php-imap php-mysql php-memcached php7.0-readline php-xdebug \
+php-mbstring php-xml php7.0-zip php7.0-intl
 
-# Make MCrypt Available
-
-ln -s /etc/php5/conf.d/mcrypt.ini /etc/php5/mods-available
-sudo php5enmod mcrypt
-
-# Install Mailparse PECL Extension
-
-pecl install mailparse
-echo "extension=mailparse.so" > /etc/php5/mods-available/mailparse.ini
-ln -s /etc/php5/mods-available/mailparse.ini /etc/php5/cli/conf.d/20-mailparse.ini
 
 # Install Composer
 
@@ -75,14 +65,14 @@ EOF
 
 # Set Some PHP CLI Settings
 
-sudo sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/cli/php.ini
-sudo sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/cli/php.ini
-sudo sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php5/cli/php.ini
-sudo sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php5/cli/php.ini
+sudo sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.0/cli/php.ini
+sudo sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.0/cli/php.ini
+sudo sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.0/cli/php.ini
+sudo sed -i "s/;date.timezone.*/date.timezone = Europe\/Berlin/" /etc/php/7.0/cli/php.ini
 
 # Install Nginx & PHP-FPM
 
-apt-get install -y nginx php5-fpm
+apt-get install -y --force-yes nginx php7.0-fpm
 
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
@@ -91,19 +81,19 @@ service nginx restart
 
 # Setup Some PHP-FPM Options
 
-ln -s /etc/php5/mods-available/mailparse.ini /etc/php5/fpm/conf.d/20-mailparse.ini
+sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.0/fpm/php.ini
+sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.0/fpm/php.ini
+sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php/7.0/fpm/php.ini
+sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.0/fpm/php.ini
+sed -i "s/upload_max_filesize = .*/upload_max_filesize = 100M/" /etc/php/7.0/fpm/php.ini
+sed -i "s/post_max_size = .*/post_max_size = 100M/" /etc/php/7.0/fpm/php.ini
+sed -i "s/;date.timezone.*/date.timezone = Europe\/Berlin/" /etc/php/7.0/fpm/php.ini
 
-sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/fpm/php.ini
-sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/fpm/php.ini
-sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php5/fpm/php.ini
-sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php5/fpm/php.ini
-sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php5/fpm/php.ini
-
-echo "xdebug.remote_enable = 1" >> /etc/php5/fpm/conf.d/20-xdebug.ini
-echo "xdebug.remote_connect_back = 1" >> /etc/php5/fpm/conf.d/20-xdebug.ini
-echo "xdebug.remote_port = 9000" >> /etc/php5/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_enable = 1" >> /etc/php/7.0/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_connect_back = 1" >> /etc/php/7.0/fpm/conf.d/20-xdebug.ini
+echo "xdebug.remote_port = 9000" >> /etc/php/7.0/fpm/conf.d/20-xdebug.ini
 # Behat might not work with only 100
-echo "xdebug.max_nesting_level = 200" >> /etc/php5/cli/conf.d/20-xdebug.ini
+echo "xdebug.max_nesting_level = 200" >> /etc/php/7.0/cli/conf.d/20-xdebug.ini
 
 # Copy fastcgi_params to Nginx because they broke it on the PPA
 
@@ -134,15 +124,15 @@ EOF
 sed -i "s/user www-data;/user vagrant;/" /etc/nginx/nginx.conf
 sed -i "s/# server_names_hash_bucket_size.*/server_names_hash_bucket_size 64;/" /etc/nginx/nginx.conf
 
-sed -i "s/user = www-data/user = vagrant/" /etc/php5/fpm/pool.d/www.conf
-sed -i "s/group = www-data/group = vagrant/" /etc/php5/fpm/pool.d/www.conf
+sed -i "s/user = www-data/user = vagrant/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/group = www-data/group = vagrant/" /etc/php/7.0/fpm/pool.d/www.conf
 
-sed -i "s/;listen\.owner.*/listen.owner = vagrant/" /etc/php5/fpm/pool.d/www.conf
-sed -i "s/;listen\.group.*/listen.group = vagrant/" /etc/php5/fpm/pool.d/www.conf
-sed -i "s/;listen\.mode.*/listen.mode = 0666/" /etc/php5/fpm/pool.d/www.conf
+sed -i "s/;listen\.owner.*/listen.owner = vagrant/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/;listen\.group.*/listen.group = vagrant/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/;listen\.mode.*/listen.mode = 0666/" /etc/php/7.0/fpm/pool.d/www.conf
 
 service nginx restart
-service php5-fpm restart
+service php7.0-fpm restart
 
 # Add Vagrant User To WWW-Data
 
@@ -303,6 +293,7 @@ rm -rf /usr/src/linux-headers*
 rm -f /var/lib/apt/lists/archive.*
 
 # Zero free space to aid VM compression
+echo "Free disk space with dd"
 dd if=/dev/zero of=/EMPTY bs=1M
 rm -f /EMPTY
 

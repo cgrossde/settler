@@ -12,6 +12,7 @@
 * Remove unused packages (PostgreSQL, Blackfire, beanstalkd, redis)
 * Changed timezone to Berlin
 * Added `snmp` and `php5-snmp`
+* PHP 7.0
 
 **Aliases:**
 * `behat` for `vendor/behat/behat/bin/behat`
